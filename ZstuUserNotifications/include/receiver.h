@@ -6,9 +6,7 @@
 #define CPLAYGROUNDS_RECEIVER_H
 
 #include <curl/curl.h>
-#include <cjson/cJSON.h>
-#include <stdlib.h>
-#include <string.h>
+#include <time.h>
 
 #define ELEC_QUERY_URL "https://xqh5.17wanxiao.com/smartWaterAndElectricityService/SWAEServlet"
 #define IDUO_NOTIFICATION_URL "http://fangke.zstu.edu.cn:6007/api/WeChat/SendWeChatMessage"
@@ -19,15 +17,20 @@ typedef char rcv_err_t;
 #define RCV_OK              0   // rcv_err_t value indicating success (no error)
 #define RCV_FAIL            1   // Generic rcv_err_t code indicating failure
 
-typedef double timestamp;
-
 #pragma region (Properties)Receiver
 typedef struct Dorm Dorm;
 typedef struct Receiver Receiver;
 
+enum NotifyMode {
+    print,
+    printAndNotify,
+    notify
+};
+
 const Dorm *receiver_dorm(const Receiver *hdl);
 
 double dorm_balance(const Dorm *hdl);
+time_t dorm_updateTime(const Dorm *hdl);
 #pragma endregion
 
 #pragma region (Methods)Receiver
@@ -37,18 +40,7 @@ Receiver *receiver_init(char *name, char *uid);
 
 rcv_err_t receiver_deinit(Receiver *hdl);
 
-rcv_err_t receiver_request_balance(Receiver *rcv);
-
-/*
- * NAME
- * receiver_request_balance()
- *
- * DESCRIPTION
- * 从完美校园服务器的返回数据（JSON）中获取寝室电费余额
- */
-rcv_err_t receiver_parse_balance(Receiver *rcv);
-
-rcv_err_t receiver_get_notify(const Receiver *rcv);
+rcv_err_t receiver_notify(Receiver *rcv, enum NotifyMode mode);
 
 #pragma endregion
 

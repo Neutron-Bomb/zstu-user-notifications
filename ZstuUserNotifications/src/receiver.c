@@ -2,12 +2,16 @@
 // Created by Haren on 2023/4/28.
 //
 
+#include <cjson/cJSON.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "receiver.h"
 
 struct Dorm {
     char *fullName; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
     double balance;
-    timestamp updateTime;
+    time_t updateTime;
 };
 
 struct Receiver {
@@ -27,6 +31,11 @@ const Dorm *receiver_dorm(const Receiver *hdl)
 double dorm_balance(const Dorm *hdl)
 {
     return hdl->balance;
+}
+
+time_t dorm_updateTime(const Dorm *hdl)
+{
+    return hdl->updateTime;
 }
 
 size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
@@ -56,6 +65,54 @@ rcv_err_t receiver_deinit(Receiver *hdl)
     free(hdl->dorm);
     free(hdl);
 
+    return RCV_OK;
+}
+
+rcv_err_t receiver_collecdate_to_timestamp(Receiver *rcv, const char *collecdate)
+{
+    size_t collecdate_length = strlen(collecdate);
+
+    // format: {0: year, 1: month, 2: day, 3: hour, 4: minute, 5: second}
+    char *parse[6] = {};
+    for (int i = 0; i < collecdate_length; ++i) {
+        if (i < 4) parse[0][i] = collecdate[i];                 // year
+        else if (i > 4 && i < 7) parse[1][i] = collecdate[i];   // month
+        else if (i > 7 && i < 10) parse[2][i] = collecdate[i];  // day
+        else if (i > 10 && i < 13) parse[3][i] = collecdate[i]; // hour
+        else if (i > 13 && i < 16) parse[4][i] = collecdate[i]; // minute
+        else if (i > 16 && i < 19) parse[5][i] = collecdate[i]; // second
+    }
+
+    return RCV_OK;
+}
+
+rcv_err_t receiver_parse_balance(Receiver *rcv)
+{
+    cJSON *json = cJSON_Parse(rcv->json_rawValue);
+    if (json == NULL) return RCV_FAIL;
+
+    cJSON *body = cJSON_Parse(cJSON_GetObjectItem(json, "body")->valuestring);
+    if (body == NULL) return RCV_FAIL;
+
+    char *roomfullname = cJSON_GetObjectItem(body, "roomfullname")->valuestring;
+    if (roomfullname == NULL) return RCV_FAIL;
+
+    rcv->dorm->fullName = roomfullname;
+
+    // parse array type "modlist"
+    cJSON *modlist = cJSON_GetObjectItem(body, "modlist");
+    if (modlist == NULL) return RCV_FAIL;
+
+    cJSON *modlist_element = cJSON_GetArrayItem(modlist, 0);
+    if (modlist_element == NULL) return RCV_FAIL;
+
+    rcv->dorm->balance = cJSON_GetObjectItem(modlist_element, "odd")->valuedouble;
+
+    // free up the RAM
+    cJSON_free(json);
+    cJSON_free(body);
+    cJSON_free(modlist);
+    cJSON_free(modlist_element);
     return RCV_OK;
 }
 
@@ -92,34 +149,20 @@ rcv_err_t receiver_request_balance(Receiver *rcv)
     curl_easy_perform(curl_elec);
 
     rcv->json_rawValue = elec_data;
+    rcv->dorm->updateTime = time(NULL);
 
     curl_easy_cleanup(curl_elec);
+
+    receiver_parse_balance(rcv);
     return 0;
 }
 
-rcv_err_t receiver_parse_balance(Receiver *rcv)
+rcv_err_t receiver_notify(Receiver *rcv, enum NotifyMode mode)
 {
-    cJSON *json = cJSON_Parse(rcv->json_rawValue);
-    if (json == NULL) return RCV_FAIL;
+    receiver_request_balance(rcv);
+    if (mode < 2) printf("当前寝室电费余额: %.02f度\n", rcv->dorm->balance);
+    if (mode == print) return RCV_OK;
 
-    cJSON *body = cJSON_Parse(cJSON_GetObjectItem(json, "body")->valuestring);
-    cJSON_free(json);
-
-    cJSON *modlist = cJSON_GetObjectItem(body, "modlist");
-    cJSON_free(body);
-
-    cJSON *modlist_element = cJSON_GetArrayItem(modlist, 0);
-    cJSON_free(modlist);
-
-    if (modlist_element != NULL) {
-        rcv->dorm->balance = cJSON_GetObjectItem(modlist_element, "odd")->valuedouble;
-        cJSON_free(modlist_element);
-        return 0;
-    } else return 1;
-}
-
-rcv_err_t receiver_get_notify(const Receiver *rcv)
-{
     CURL *curl_iduo = curl_easy_init();
 
     char queryData[1024] = {};
