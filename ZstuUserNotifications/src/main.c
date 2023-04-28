@@ -28,8 +28,11 @@ int main()
         receiver_request_balance(receivers[i]);
         receiver_parse_balance(receivers[i]);
 //        receiver_get_notify(receivers[i]);
-        printf("当前寝室电费余额: %.02f度\n", receivers[i]->balance);
+        printf("当前寝室电费余额: %.02f度\n", dorm_balance(receiver_dorm(receivers[i])));
     }
+
+    receiver_deinit(cck);
+    receiver_deinit(ljh);
 
     return 0;
 }

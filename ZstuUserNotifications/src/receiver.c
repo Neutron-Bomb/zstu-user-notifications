@@ -4,29 +4,70 @@
 
 #include "receiver.h"
 
+struct Dorm {
+    char *fullName; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
+    double balance;
+    timestamp updateTime;
+};
+
+struct Receiver {
+    char *uid;
+    char *name;
+    char *json_rawValue;
+    char *post_data;
+
+    Dorm *dorm;
+};
+
+const Dorm *receiver_dorm(const Receiver *hdl)
+{
+    return hdl->dorm;
+}
+
+double dorm_balance(const Dorm *hdl)
+{
+    return hdl->balance;
+}
+
 size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
     strcat(userdata, ptr);
     return nmemb;
 }
 
-Receiver* receiver_init(char* name, char* uid)
+Receiver *receiver_init(char *name, char *uid)
 {
-    Receiver* hdl = (Receiver*) malloc(sizeof(Receiver));
-    hdl->name = name;
-    hdl->uid = uid;
-    return hdl;
+    Receiver *rcv_hdl = (Receiver *) malloc(sizeof(Receiver));
+    Dorm *drm_hdl = (Dorm *) malloc(sizeof(Dorm));
+
+    drm_hdl->balance = 0;
+    drm_hdl->fullName = 0;
+    drm_hdl->updateTime = 0;
+
+    rcv_hdl->name = name;
+    rcv_hdl->uid = uid;
+    rcv_hdl->dorm = drm_hdl;
+
+    return rcv_hdl;
 }
 
-rcv_err_t receiver_request_balance(Receiver* rcv)
+rcv_err_t receiver_deinit(Receiver *hdl)
 {
-    CURL* curl_elec = curl_easy_init();
+    free(hdl->dorm);
+    free(hdl);
+
+    return RCV_OK;
+}
+
+rcv_err_t receiver_request_balance(Receiver *rcv)
+{
+    CURL *curl_elec = curl_easy_init();
 
     char encoded_str[128] = {};
     char param[80] = {};
     char elec_data[10240] = {};
 
-    char* encoded_param = NULL;
+    char *encoded_param = NULL;
 
     // 将学号插入字符串
     sprintf(param, "{\"cmd\":\"getstuindexpage\",\"account\":\"%s\"}", rcv->uid);
@@ -56,30 +97,30 @@ rcv_err_t receiver_request_balance(Receiver* rcv)
     return 0;
 }
 
-rcv_err_t receiver_parse_balance(Receiver* rcv)
+rcv_err_t receiver_parse_balance(Receiver *rcv)
 {
-    cJSON* json = cJSON_Parse(rcv->json_rawValue);
+    cJSON *json = cJSON_Parse(rcv->json_rawValue);
     if (json == NULL) return RCV_FAIL;
 
-    cJSON* body = cJSON_Parse(cJSON_GetObjectItem(json, "body")->valuestring);
+    cJSON *body = cJSON_Parse(cJSON_GetObjectItem(json, "body")->valuestring);
     cJSON_free(json);
 
-    cJSON* modlist = cJSON_GetObjectItem(body, "modlist");
+    cJSON *modlist = cJSON_GetObjectItem(body, "modlist");
     cJSON_free(body);
 
-    cJSON* modlist_element = cJSON_GetArrayItem(modlist, 0);
+    cJSON *modlist_element = cJSON_GetArrayItem(modlist, 0);
     cJSON_free(modlist);
 
     if (modlist_element != NULL) {
-        rcv->balance = cJSON_GetObjectItem(modlist_element, "odd")->valuedouble;
+        rcv->dorm->balance = cJSON_GetObjectItem(modlist_element, "odd")->valuedouble;
         cJSON_free(modlist_element);
         return 0;
     } else return 1;
 }
 
-rcv_err_t receiver_get_notify(const Receiver* rcv)
+rcv_err_t receiver_get_notify(const Receiver *rcv)
 {
-    CURL* curl_iduo = curl_easy_init();
+    CURL *curl_iduo = curl_easy_init();
 
     char queryData[1024] = {};
     sprintf(queryData, u8"{"
@@ -96,14 +137,14 @@ rcv_err_t receiver_get_notify(const Receiver* rcv)
                        u8"Url: \"https://github.com/haren724\""
                        u8"}"
                        u8"}"
-                       u8"}", rcv->uid, rcv->name, rcv->balance, rcv->balance);
+                       u8"}", rcv->uid, rcv->name, rcv->dorm->balance, rcv->dorm->balance);
 
     // 一多推送请求配置
     curl_easy_setopt(curl_iduo, CURLOPT_URL, IDUO_NOTIFICATION_URL);
     curl_easy_setopt(curl_iduo, CURLOPT_POST, 1L);
     curl_easy_setopt(curl_iduo, CURLOPT_POSTFIELDS, queryData);
 
-    struct curl_slist* list;
+    struct curl_slist *list;
     list = curl_slist_append(NULL, "Content-Type: application/json-patch+json");
     list = curl_slist_append(list, "Content-Type: application/json-patch+json");
     list = curl_slist_append(list, "Connection: keep-alive");

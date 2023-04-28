@@ -19,25 +19,25 @@ typedef char rcv_err_t;
 #define RCV_OK              0   // rcv_err_t value indicating success (no error)
 #define RCV_FAIL            1   // Generic rcv_err_t code indicating failure
 
+typedef double timestamp;
 
 #pragma region (Properties)Receiver
-typedef struct {
-    char* uid;
-    char* name;
-    char* json_rawValue;
-    char* post_data;
-    char* dormFullName; /* EXAMPLE
- * dormFullName = "2区7号公寓-70304" */
-    double balance;
-} Receiver;
+typedef struct Dorm Dorm;
+typedef struct Receiver Receiver;
+
+const Dorm *receiver_dorm(const Receiver *hdl);
+
+double dorm_balance(const Dorm *hdl);
 #pragma endregion
 
 #pragma region (Methods)Receiver
 size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
-Receiver* receiver_init(char* name, char* uid);
+Receiver *receiver_init(char *name, char *uid);
 
-rcv_err_t receiver_request_balance(Receiver* rcv);
+rcv_err_t receiver_deinit(Receiver *hdl);
+
+rcv_err_t receiver_request_balance(Receiver *rcv);
 
 /*
  * NAME
@@ -46,9 +46,9 @@ rcv_err_t receiver_request_balance(Receiver* rcv);
  * DESCRIPTION
  * 从完美校园服务器的返回数据（JSON）中获取寝室电费余额
  */
-rcv_err_t receiver_parse_balance(Receiver* rcv);
+rcv_err_t receiver_parse_balance(Receiver *rcv);
 
-rcv_err_t receiver_get_notify(const Receiver* rcv);
+rcv_err_t receiver_get_notify(const Receiver *rcv);
 
 #pragma endregion
 
