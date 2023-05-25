@@ -8,44 +8,24 @@
 
 #include "receiver.h"
 
-struct Dorm {
-    char *fullName; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
-    double balance;
-    time_t updateTime;
-};
-
-struct Receiver {
-    char *uid;
-    char *name;
-    char *json_rawValue;
-    char *post_data;
-
-    Dorm *dorm;
-};
-
-const Dorm *receiver_dorm(const Receiver *hdl)
-{
+const Dorm *receiver_dorm(const Receiver *hdl) {
     return hdl->dorm;
 }
 
-double dorm_balance(const Dorm *hdl)
-{
+double dorm_balance(const Dorm *hdl) {
     return hdl->balance;
 }
 
-time_t dorm_updateTime(const Dorm *hdl)
-{
+time_t dorm_updateTime(const Dorm *hdl) {
     return hdl->updateTime;
 }
 
-size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
+size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
     strcat(userdata, ptr);
     return nmemb;
 }
 
-Receiver *receiver_init(char *name, char *uid)
-{
+Receiver *receiver_init(char *name, char *uid) {
     Receiver *rcv_hdl = (Receiver *) malloc(sizeof(Receiver));
     Dorm *drm_hdl = (Dorm *) malloc(sizeof(Dorm));
 
@@ -60,16 +40,14 @@ Receiver *receiver_init(char *name, char *uid)
     return rcv_hdl;
 }
 
-rcv_err_t receiver_deinit(Receiver *hdl)
-{
+rcv_err_t receiver_deinit(Receiver *hdl) {
     free(hdl->dorm);
     free(hdl);
 
     return RCV_OK;
 }
 
-rcv_err_t receiver_collecdate_to_timestamp(Receiver *rcv, const char *collecdate)
-{
+rcv_err_t receiver_collecdate_to_timestamp(Receiver *rcv, const char *collecdate) {
     size_t collecdate_length = strlen(collecdate);
 
     // format: {0: year, 1: month, 2: day, 3: hour, 4: minute, 5: second}
@@ -86,8 +64,7 @@ rcv_err_t receiver_collecdate_to_timestamp(Receiver *rcv, const char *collecdate
     return RCV_OK;
 }
 
-rcv_err_t receiver_parse_balance(Receiver *rcv)
-{
+rcv_err_t receiver_parse_balance(Receiver *rcv) {
     cJSON *json = cJSON_Parse(rcv->json_rawValue);
     if (json == NULL) return RCV_FAIL;
 
@@ -116,8 +93,7 @@ rcv_err_t receiver_parse_balance(Receiver *rcv)
     return RCV_OK;
 }
 
-rcv_err_t receiver_request_balance(Receiver *rcv)
-{
+rcv_err_t receiver_request_balance(Receiver *rcv) {
     CURL *curl_elec = curl_easy_init();
 
     char encoded_str[128] = {};
@@ -157,8 +133,7 @@ rcv_err_t receiver_request_balance(Receiver *rcv)
     return 0;
 }
 
-rcv_err_t receiver_notify(Receiver *rcv, enum NotifyMode mode)
-{
+rcv_err_t receiver_notify(Receiver *rcv, enum NotifyMode mode) {
     receiver_request_balance(rcv);
     if (mode < 2) printf("当前寝室电费余额: %.02f度\n", rcv->dorm->balance);
     if (mode == print) return RCV_OK;

@@ -13,7 +13,9 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 link_libraries(${CURL_LIBRARIES})
 
-add_executable(ZstuUserNotifications
-        ZstuUserNotifications/include/receiver.h
-        ZstuUserNotifications/src/main.c
-        ZstuUserNotifications/src/receiver.c)
+#find_package(Curses REQUIRED)
+#include_directories(${CURSES_INCLUDE_DIR})
+#link_libraries(${CURSES_LIBRARIES})
+
+file(GLOB SOURCES "ZstuUserNotifications/src/*.c")
+add_executable(ZstuUserNotifications ${SOURCES})

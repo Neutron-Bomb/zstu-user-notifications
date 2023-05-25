@@ -18,8 +18,21 @@ typedef char rcv_err_t;
 #define RCV_FAIL            1   // Generic rcv_err_t code indicating failure
 
 #pragma region (Properties)Receiver
-typedef struct Dorm Dorm;
-typedef struct Receiver Receiver;
+
+typedef struct {
+    char *fullName; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
+    double balance;
+    time_t updateTime;
+} Dorm;
+
+typedef struct {
+    char *uid;
+    char *name;
+    char *json_rawValue;
+    char *post_data;
+
+    Dorm *dorm;
+} Receiver;
 
 enum NotifyMode {
     print,
@@ -30,10 +43,13 @@ enum NotifyMode {
 const Dorm *receiver_dorm(const Receiver *hdl);
 
 double dorm_balance(const Dorm *hdl);
+
 time_t dorm_updateTime(const Dorm *hdl);
+
 #pragma endregion
 
 #pragma region (Methods)Receiver
+
 size_t receiver_elec_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 Receiver *receiver_init(char *name, char *uid);
