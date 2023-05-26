@@ -1,56 +1,10 @@
-#include <pthread.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include "receiver.h"
 #include "localize.h"
-
-void show_help() {
-    puts("====Help====\n"
-         "[h]\tshow this man page\n"
-         "[i]\tshow the service status\n"
-         "[p]\tpause the notification pusher\n"
-         "[q]\tterminate the whole service\n"
-         "[s]\tsave the user subscriptions immediately\n"
-         "\twhich is located in \"~/.config/zstuNotify\"\n"
-         "[w]\t"
-         );
-}
-
-void *input_thread(void *arg) {
-    int input;
-
-    printf("ZstuUserNotifications Backend\nv0.1 alpha\n");
-    show_help();
-
-    loop:
-    while (1) {
-        input = getchar();
-        if (input == 'q') break;
-        else if (input == 'h') show_help();
-
-        usleep(16);
-    }
-
-    puts(EN_US_QUIT_CONFIRMATION);
-    input = getchar();
-    if (input != 13 && input != 'y' && input != 'Y') goto loop;
-    return NULL;
-}
+#include "terminal_cli.h"
 
 int main() {
-    pthread_t input_thread_id;
-    pthread_create(&input_thread_id, NULL, input_thread, NULL);
-
-    struct termios old_terminal_settings;
-    struct termios new_terminal_settings;
-
-    // 备份终端设置
-    tcgetattr(STDIN_FILENO, &old_terminal_settings);
-    new_terminal_settings = old_terminal_settings;
-
-    new_terminal_settings.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal_settings);
+    TerminalCLI *cli = terminalCLI_init();
+    terminalCLI_resume(cli);
 
     // USER cck
     Receiver *cck = receiver_init(u8"陈驰坤", "2020316101023");
@@ -83,9 +37,6 @@ int main() {
     receiver_deinit(cck);
     receiver_deinit(ljh);
 
-    pthread_join(input_thread_id, NULL);
-
-    // 恢复终端设置
-    tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal_settings);
+    terminalCLI_deinit(cli);
     return 0;
 }

@@ -70,6 +70,13 @@ build CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/server.c.o:
   OBJECT_DIR = CMakeFiles/ZstuUserNotifications.dir
   OBJECT_FILE_DIR = CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src
 
+build CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/terminal_cli.c.o: C_COMPILER__ZstuUserNotifications_Debug /Users/haren724/CLionProjects/zstu-user-notifications/ZstuUserNotifications/src/terminal_cli.c || cmake_object_order_depends_target_ZstuUserNotifications
+  DEP_FILE = CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/terminal_cli.c.o.d
+  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -std=gnu11
+  INCLUDES = -I/Users/haren724/CLionProjects/zstu-user-notifications/ZstuUserNotifications/include -isystem /opt/homebrew/Cellar/cjson/1.7.15/include
+  OBJECT_DIR = CMakeFiles/ZstuUserNotifications.dir
+  OBJECT_FILE_DIR = CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target ZstuUserNotifications
@@ -78,7 +85,7 @@ build CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/server.c.o:
 #############################################
 # Link the executable ZstuUserNotifications
 
-build ZstuUserNotifications: C_EXECUTABLE_LINKER__ZstuUserNotifications_Debug CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/main.c.o CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/receiver.c.o CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/server.c.o | /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson_utils.1.7.15.dylib /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson.1.7.15.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/lib/libcurl.tbd
+build ZstuUserNotifications: C_EXECUTABLE_LINKER__ZstuUserNotifications_Debug CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/main.c.o CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/receiver.c.o CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/server.c.o CMakeFiles/ZstuUserNotifications.dir/ZstuUserNotifications/src/terminal_cli.c.o | /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson_utils.1.7.15.dylib /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson.1.7.15.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/lib/libcurl.tbd
   FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk
   LINK_LIBRARIES = /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson_utils.1.7.15.dylib  /opt/homebrew/Cellar/cjson/1.7.15/lib/libcjson.1.7.15.dylib  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/lib/libcurl.tbd  -lm
   OBJECT_DIR = CMakeFiles/ZstuUserNotifications.dir

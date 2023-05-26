@@ -7,10 +7,6 @@
 
 // quit confirmation
 #define EN_US_QUIT_CONFIRMATION "Sure to quit? [y/N]"
-#define ZH_CN_
-
-
-
-#define
+#define ZH_CN_ "hell"
 
 #endif //ZSTUUSERNOTIFICATIONS_LOCALIZE_H
