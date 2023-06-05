@@ -11,6 +11,8 @@
 #define ELEC_QUERY_URL "https://xqh5.17wanxiao.com/smartWaterAndElectricityService/SWAEServlet"
 #define IDUO_NOTIFICATION_URL "http://fangke.zstu.edu.cn:6007/api/WeChat/SendWeChatMessage"
 
+#define class struct
+
 typedef char rcv_err_t;
 
 /* Definitions for error constants. */
@@ -19,26 +21,29 @@ typedef char rcv_err_t;
 
 #pragma region (Properties)Receiver
 
-typedef struct {
-    char *fullName; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
-    double balance;
-    time_t updateTime;
-} Dorm;
-
-typedef struct {
-    char *uid;
-    char *name;
-    char *json_rawValue;
-    char *post_data;
-
-    Dorm *dorm;
-} Receiver;
-
 enum NotifyMode {
     print,
     printAndNotify,
     notify
 };
+
+typedef struct Dorm {
+    char fullName[256]; /* EXAMPLE dormFullName = "2区7号公寓-70304" */
+    double balance;
+    time_t updateTime;
+} Dorm;
+
+typedef class Receiver {
+    char uid[14]; // EXAMPLE "2020123456789" [13] + '\0' = [14]
+    char name[16]; // [10] for 3 Chinese characters
+    char json_rawValue[4096];
+    char post_data[128];
+
+    Dorm *dorm;
+
+    rcv_err_t (*notify)(struct Receiver *rcv, enum NotifyMode mode);
+    rcv_err_t (*save)(struct Receiver *rcv);
+} Receiver;
 
 const Dorm *receiver_dorm(const Receiver *hdl);
 

@@ -1,11 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cn">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <title>用户设置</title>
+    <style>
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .toggle-label {
+            margin-left: 10px;
+            font-family: 'PingFang SC', Arial, sans-serif;
+            /* 在字体族中指定苹方字体，并提供备选字体 */
+        }
+    </style>
+</head>
 <body>
+<h1>用户设置</h1>
+<div class="toggle-container">
+    <input type="checkbox" id="toggleSwitch">
+    <label for="toggleSwitch" class="toggle-label">启用通知</label>
+</div>
 
-<h1>通知设置</h1>
-<p>My first paragraph.</p>
-
+<script>
+    const toggleSwitch = document.getElementById("toggleSwitch");
+    
+    toggleSwitch.addEventListener("change", function() {
+        if (toggleSwitch.checked) {
+            // 处理开启通知的逻辑
+            console.log("通知已启用");
+        } else {
+            // 处理关闭通知的逻辑
+            console.log("通知已关闭");
+        }
+    });
+</script>
 </body>
 </html>

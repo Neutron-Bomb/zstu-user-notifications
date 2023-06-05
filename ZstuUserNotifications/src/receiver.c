@@ -30,11 +30,10 @@ Receiver *receiver_init(char *name, char *uid) {
     Dorm *drm_hdl = (Dorm *) malloc(sizeof(Dorm));
 
     drm_hdl->balance = 0;
-    drm_hdl->fullName = 0;
     drm_hdl->updateTime = 0;
 
-    rcv_hdl->name = name;
-    rcv_hdl->uid = uid;
+    strcpy(rcv_hdl->name, name);
+    strcpy(rcv_hdl->uid, uid);
     rcv_hdl->dorm = drm_hdl;
 
     return rcv_hdl;
@@ -74,7 +73,7 @@ rcv_err_t receiver_parse_balance(Receiver *rcv) {
     char *roomfullname = cJSON_GetObjectItem(body, "roomfullname")->valuestring;
     if (roomfullname == NULL) return RCV_FAIL;
 
-    rcv->dorm->fullName = roomfullname;
+    strcpy(rcv->dorm->fullName, roomfullname);
 
     // parse array type "modlist"
     cJSON *modlist = cJSON_GetObjectItem(body, "modlist");
@@ -96,9 +95,7 @@ rcv_err_t receiver_parse_balance(Receiver *rcv) {
 rcv_err_t receiver_request_balance(Receiver *rcv) {
     CURL *curl_elec = curl_easy_init();
 
-    char encoded_str[128] = {};
     char param[80] = {};
-    char elec_data[10240] = {};
 
     char *encoded_param = NULL;
 
@@ -109,22 +106,19 @@ rcv_err_t receiver_request_balance(Receiver *rcv) {
     encoded_param = curl_easy_escape(curl_elec, param, 0);
 
     // 合并其他所有内容
-    sprintf(encoded_str, "param=%s&customercode=599&method=getstuindexpage", encoded_param);
+    sprintf(rcv->post_data, "param=%s&customercode=599&method=getstuindexpage", encoded_param);
     curl_free(encoded_param);
-
-    rcv->post_data = encoded_str;
 
     // 完美校园请求配置
     curl_easy_setopt(curl_elec, CURLOPT_URL, ELEC_QUERY_URL);
     curl_easy_setopt(curl_elec, CURLOPT_POST, 1L);
     curl_easy_setopt(curl_elec, CURLOPT_POSTFIELDS, rcv->post_data);
     curl_easy_setopt(curl_elec, CURLOPT_WRITEFUNCTION, receiver_elec_write_callback);
-    curl_easy_setopt(curl_elec, CURLOPT_WRITEDATA, elec_data);
+    curl_easy_setopt(curl_elec, CURLOPT_WRITEDATA, rcv->json_rawValue);
 
     // 执行余额查询请求
     curl_easy_perform(curl_elec);
 
-    rcv->json_rawValue = elec_data;
     rcv->dorm->updateTime = time(NULL);
 
     curl_easy_cleanup(curl_elec);

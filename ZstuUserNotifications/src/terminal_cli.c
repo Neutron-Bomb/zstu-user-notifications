@@ -36,6 +36,7 @@ void *input_thread() {
             puts(EN_US_QUIT_CONFIRMATION);
             input = getchar();
             if (input == 13 || input == 'y' || input == 'Y') break;
+            else puts("quit aborted. Will continue executing.");
         } else if (input == 'h') show_help();
         usleep(16);
     }
@@ -43,8 +44,18 @@ void *input_thread() {
     return NULL;
 }
 
+size_t terminalCLI_resume(TerminalCLI *hdl) {
+    pthread_create(&(hdl->input_thread_id), NULL, input_thread, NULL);
+    return 0;
+}
+
+// class (de)init methods
+
 TerminalCLI *terminalCLI_init() {
     TerminalCLI *cli_hdl = (TerminalCLI *) malloc(sizeof(TerminalCLI));
+
+    // initialize methods
+    cli_hdl->resume = terminalCLI_resume;
 
     // 备份终端设置
     tcgetattr(STDIN_FILENO, &(cli_hdl->old_terminal_settings));
@@ -63,10 +74,5 @@ size_t terminalCLI_deinit(TerminalCLI *hdl) {
     tcsetattr(STDIN_FILENO, TCSANOW, &(hdl->old_terminal_settings));
 
     free(hdl);
-    return 0;
-}
-
-size_t terminalCLI_resume(TerminalCLI *hdl) {
-    pthread_create(&(hdl->input_thread_id), NULL, input_thread, NULL);
     return 0;
 }

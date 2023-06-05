@@ -1,16 +1,19 @@
+#include <sqlite3.h>
+
 #include "receiver.h"
 #include "localize.h"
 #include "terminal_cli.h"
 
 int main() {
     TerminalCLI *cli = terminalCLI_init();
-    terminalCLI_resume(cli);
+    cli->resume(cli);
 
     // USER cck
     Receiver *cck = receiver_init(u8"陈驰坤", "2020316101023");
 
-    // USER yzj
+    // USER ljh
     Receiver *ljh = receiver_init(u8"李佳禾", "2020316101061");
+
 /*
     // USER lsf
     Receiver* lsf = receiver_init(u8"楼胜峰", "2022331200164");
@@ -24,19 +27,20 @@ int main() {
     // USER zbh
     Receiver* zbh = receiver_init(u8"张碧涵", "2020316101022");
 */
+
     Receiver *receivers[] = {
             cck, ljh
     };
     int receivers_length = sizeof(receivers) / sizeof(receivers[0]);
 
     for (int i = 0; i < receivers_length; ++i) {
-        receiver_notify(receivers[i], print);
+        receiver_notify(receivers[i], printAndNotify);
     }
 
     // free up the memory
     receiver_deinit(cck);
     receiver_deinit(ljh);
-
     terminalCLI_deinit(cli);
+
     return 0;
 }
